@@ -13,6 +13,8 @@ class Couter: ObservableObject {
     @Published var minutes = 0
     @Published var seconds = 0
     
+    var selectedDate = Date()
+    
     init() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             // vai ser disparado a cada um segundo
@@ -22,23 +24,27 @@ class Couter: ObservableObject {
             
             let currentDate = calendar.date(from: components)
             
+            let selectedComponents = calendar.dateComponents([.year, .day, .month, .hour, .minute, .second], from: self.selectedDate)
+            
             var eventDateComponent = DateComponents()
             
-            eventDateComponent.year = 2022
-            eventDateComponent.month = 8
-            eventDateComponent.day = 10
-            eventDateComponent.hour = 21
-            eventDateComponent.minute = 10
-            eventDateComponent.second = 20
+            eventDateComponent.year = selectedComponents.year
+            eventDateComponent.month = selectedComponents.month
+            eventDateComponent.day = selectedComponents.day
+            eventDateComponent.hour = selectedComponents.hour
+            eventDateComponent.minute = selectedComponents.minute
+            eventDateComponent.second = selectedComponents.second
         
             let eventDate = calendar.date(from: eventDateComponent)
             
             let timeLeft = calendar.dateComponents([ .day, .hour, .minute, .second], from: currentDate!, to: eventDate!)
             
-            self.days = timeLeft.day ?? 0
-            self.hours = timeLeft.hour ?? 0
-            self.minutes = timeLeft.minute ?? 0
-            self.seconds = timeLeft.second ?? 0
+            if (timeLeft.second! >= 0) {
+                self.days = timeLeft.day ?? 0
+                self.hours = timeLeft.hour ?? 0
+                self.minutes = timeLeft.minute ?? 0
+                self.seconds = timeLeft.second ?? 0
+            }
         }
     }
 }
@@ -47,7 +53,14 @@ struct ContentView: View {
     @StateObject var couter = Couter()
     
     var body: some View {
-        VStack {
+        VStack() {
+            Text("Selecione uma data:")
+                .font(.title)
+                .multilineTextAlignment(.center)
+            DatePicker(selection: $couter.selectedDate, in: Date()..., displayedComponents: [.hourAndMinute, .date], label: {
+            })
+            .padding(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
+            
             HStack {
                 Text("\(couter.days) dias")
                 Text("\(couter.hours) horas")
@@ -55,6 +68,7 @@ struct ContentView: View {
                 Text("\(couter.seconds) seg")
             }
         }
+        .padding()
     }
 }
 
